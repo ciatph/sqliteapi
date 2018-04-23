@@ -21,13 +21,14 @@ class Cassava extends CI_Controller{
 
 
 
-	public function getdata(){
-		$data['title'] =  "Cassava API - Get Data";
-		$this->cassava_model->getdata();
+	/**
+	 * Get the raw farmland plots data as raw, (unprocessed) JSON
+	 */
+	public function getdata($param = "json"){
+		$parameter = $this->input->get('param');
 
-		$this->load->view('templates/header');
-		$this->load->view('cassava/index', $data);
-		$this->load->view('templates/footer');				
+		$param = ($parameter) ? $parameter : $param;
+		echo $this->cassava_model->getplotdata($param);					
 	}		
 
 
