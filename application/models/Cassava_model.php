@@ -25,7 +25,7 @@ class Cassava_model extends CI_Model{
 	 */
 	public function getplotdata($returnType = ResultReturnType::Arrays)
 	{
-		$sql = "SELECT farmland_setup._plotno, farmland_setup._year, farmland_setup._did, farmland_setup._fid, farmland_setup._userid, users.email, 
+		$sql = "SELECT farmland_setup._plotno, farmland_setup._year, farmland_setup._fid, users.email, 
 			cultural_mngt._02noplow, cultural_mngt._03noharrow, cultural_mngt._05terrain, cultural_mngt._07cropestmethod, cultural_mngt._08varietyplanted, 
 			cultural_mngt._09pdist_prow, cultural_mngt._11pesticiderate, cultural_mngt._12freq, cultural_mngt._13dose, cultural_mngt._14pstcide_type, 
 			cultural_mngt._15srctype, cultural_mngt._16srcname, 
@@ -96,12 +96,20 @@ class Cassava_model extends CI_Model{
 
 
 		foreach($result->result() as $row){
-			// Create separate column fields for _06loc (longitude, latitude)
-			if(strlen($row->_06loc) > 3){
+			// 01. Create separate column fields for _06loc (longitude, latitude)
+			if(strlen($row->_06loc) > 3 && strpos($row->_06loc, ",") !== false){
 				$gps = explode(",", $this->stripspaces($row->_06loc));
 				$row->lat = $gps[0];
 				$row->lon = $gps[1];
 				$row->_06loc = "";
+			}
+
+			// 02. Create separate fields for _09pdist_prow (width, height)
+			if(strpos($row->_09pdist_prow ,"x") !== false){
+				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
+				$size = explode("x", $this->stripspaces($row->_09pdist_prow));
+				$row->width = $size[0];
+				$row->height = $size[1];
 			}
 
 			// Record the formatted raw data into a new array
