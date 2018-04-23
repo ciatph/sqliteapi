@@ -7,6 +7,7 @@ abstract class ResultReturnType
 	const ResultSet = "resultset";
 	const Arrays = "arrays";
 	const Row = "row";
+	const Json = "json";
 }
 
 
@@ -77,6 +78,14 @@ class Cassava_model extends CI_Model{
 			$query = $this->db->query($sql, false);
 			return $query->row_array();
 		}
+		else if($returnType == ResultReturnType::Json){
+			$query = $this->db->query($sql, false);
+			$json_array = array();
+			foreach($query->result() as $result){
+				$json_array[] = $result;
+			}
+			return json_encode($json_array);
+		}		
 	}	
 
 
