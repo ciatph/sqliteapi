@@ -22,7 +22,7 @@ class Cassava extends CI_Controller{
 
 
 	/**
-	 * Get the raw farmland plots data as raw, (unprocessed) JSON
+	 * Route: Get the raw farmland plots data as raw, (unprocessed) JSON
 	 */
 	public function getdata($param = "json"){
 		$parameter = $this->input->get('param');
@@ -59,6 +59,80 @@ class Cassava extends CI_Controller{
         }
         fclose($handle);
         exit;         
+	}
+
+
+	/** 
+	 * Send a POST requst using cURL 
+	 * @param string $url to request 
+	 * @param array $post values to send 
+	 * @param array $options for cURL 
+	 * @return string 
+	 */	
+	public function get_remote($url, array $post = array(), array $options = array(), $timeout){		
+		$defaults = array( 
+			CURLOPT_POST => 1, 
+			CURLOPT_HEADER => 0, 
+			CURLOPT_URL => $url, 
+			CURLOPT_FRESH_CONNECT => 1, 
+			CURLOPT_RETURNTRANSFER => 1, 
+			CURLOPT_FORBID_REUSE => 1, 
+			CURLOPT_TIMEOUT => $timeout,	// no. of seconds to fetch data
+			CURLOPT_POSTFIELDS => http_build_query($post) 
+		);
+		
+		$ch = curl_init(); 
+		
+		curl_setopt_array($ch, ($options + $defaults)); 
+		
+		if( ! $result = curl_exec($ch)) 
+		{ 
+			// trigger_error(curl_error($ch)); 
+			curl_close($ch); 
+			return "TIMEOUT"; 
+		} 
+		
+		curl_close($ch); 
+		return $result; 
+	}
+
+
+	/**
+	 * Route: Read the client-input url and get a POST data from it
+	 * Default timeout is 360 sec (3 minutes)
+	 */
+	public function getremote($url = ""){
+		$rurl = $this->input->get('url');
+		$data = $this->get_remote($rurl, array(), array(), 360);
+
+		if($rurl != ""){
+			if($data != "TIMEOUT"){
+				echo $data;
+			}
+			else{
+				echo "<br>Timeout processing request.";
+			}
+		}
+		else{
+			echo "<br>Cannot process, URL is empty.";
+		}
+	}
+
+
+	/**
+	 * Route: Custom processing method that can call and wait for (1) or more remote URLS
+	 */
+	public function remote_model($url = ""){
+		$url = "http://ciatph.000webhostapp.com/sqliteapi/cassava/getdata";
+		$url2 = "http://ciatph.000webhostapp.com/bioweb/tree/genus";
+		$data = $this->get_remote($url, array(), array(), 5);
+
+		$msg1 = ($data != "TIMEOUT") ? "<br>LOADED DATA 1!<br><br>" : "<br>ERROR LOADING DATA 1!<br>";
+		echo $msg1 . $data;
+		
+		$data2 = $this->get_remote($url2, array(), array(), 10);
+		$msg2 = ($data2 != "TIMEOUT") ? "<br>LOADED DATA 2!<br><br>" : "<br>ERROR LOADING DATA 2!<br>";
+		echo $msg2 . $data2;
 	}
 }
 ?>

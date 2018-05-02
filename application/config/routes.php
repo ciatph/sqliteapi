@@ -54,6 +54,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['cassava'] = 'cassava';
 $route['cassava/export'] = 'cassava/export_csv_array';
 $route['cassava/getdata'] = 'cassava/getdata';
+$route['cassava/getremote'] = 'cassava/getremote';
 
 $route['default_controller'] = 'cassava'; //'pages/view';
 $route['(:any)'] = 'pages/view/$1';
