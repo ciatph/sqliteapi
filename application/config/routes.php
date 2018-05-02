@@ -56,6 +56,10 @@ $route['cassava/export'] = 'cassava/export_csv_array';
 $route['cassava/getdata'] = 'cassava/getdata';
 $route['cassava/getremote'] = 'cassava/getremote';
 
+// test scripts
+$route['test'] = 'testscript';
+$route['test/strings'] = 'testscript/strings';
+
 $route['default_controller'] = 'cassava'; //'pages/view';
 $route['(:any)'] = 'pages/view/$1';
 $route['translate_uri_dashes'] = FALSE;
