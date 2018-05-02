@@ -138,6 +138,22 @@ class Cassava_model extends CI_Model{
 			$row->SIDE_MAP = preg_replace("/[^0-9.]/", "", $row->SIDE_MAP);
 			$row->SIDE_RATE = preg_replace("/[^0-9.]/", "", $row->SIDE_RATE);
 
+			// Misc: transfer [fertilizer]_QTY "others" to [fertilizer_type]
+			if($row->BASAL_QTY != ""){
+				$row->BASAL_TYPE = $row->BASAL_QTY;
+				$row->BASAL_QTY = "";
+			} 
+
+			if($row->TOP_QTY != ""){
+				$row->TOP_TYPE = $row->TOP_QTY;
+				$row->TOP_QTY = "";
+			} 
+
+			if($row->SIDE_QTY != ""){
+				$row->SIDE_TYPE = $row->SIDE_QTY;
+				$row->SIDE_QTY = "";
+			} 
+
 
 			// Record the formatted raw data into a new array
 			$output[] = $row;
