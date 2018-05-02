@@ -121,6 +121,24 @@ class Cassava_model extends CI_Model{
 				$row->height = $size[1];
 			}
 
+			// 03. Remove metric units on applicable items
+			$row->_02noplow = preg_replace("/[^0-9.]/", "", $row->_09pdist_prow);
+			$row->_03noharrow = preg_replace("/[^0-9.]/", "", $row->_03noharrow);
+			$row->_12freq = preg_replace("/[^0-9.]/", "", $row->_12freq);
+			$row->_11growthstg = preg_replace("/[^0-9.]/", "", $row->_11growthstg);
+			$row->_12areapl = preg_replace("/[^0-9.]/", "", $row->_12areapl);
+			$row->_04rootspl = preg_replace("/[^0-9.]/", "", $row->_04rootspl);
+			// yield: might need to normalize to kg/hec
+			$row->_03yieldhect = preg_replace("/[^0-9.]/", "", $row->_03yieldhect);
+			// fertilizers: TO-DO Type:Others=>Qty
+			$row->BASAL_MAP = preg_replace("/[^0-9.]/", "", $row->BASAL_MAP);
+			$row->BASAL_RATE = preg_replace("/[^0-9.]/", "", $row->BASAL_RATE);
+			$row->TOP_MAP = preg_replace("/[^0-9.]/", "", $row->TOP_MAP);
+			$row->TOP_RATE = preg_replace("/[^0-9.]/", "", $row->TOP_RATE);
+			$row->SIDE_MAP = preg_replace("/[^0-9.]/", "", $row->SIDE_MAP);
+			$row->SIDE_RATE = preg_replace("/[^0-9.]/", "", $row->SIDE_RATE);
+
+
 			// Record the formatted raw data into a new array
 			$output[] = $row;
 		}
