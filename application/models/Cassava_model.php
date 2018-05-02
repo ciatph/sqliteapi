@@ -132,26 +132,59 @@ class Cassava_model extends CI_Model{
 			$row->_03yieldhect = preg_replace("/[^0-9.]/", "", $row->_03yieldhect);
 			// fertilizers: TO-DO Type:Others=>Qty
 			$row->BASAL_MAP = preg_replace("/[^0-9.]/", "", $row->BASAL_MAP);
-			$row->BASAL_RATE = preg_replace("/[^0-9.]/", "", $row->BASAL_RATE);
+			$row->BASAL_RATE = preg_replace("/[^0-9.,]/", "", $row->BASAL_RATE);
 			$row->TOP_MAP = preg_replace("/[^0-9.]/", "", $row->TOP_MAP);
-			$row->TOP_RATE = preg_replace("/[^0-9.]/", "", $row->TOP_RATE);
+			$row->TOP_RATE = preg_replace("/[^0-9.,]/", "", $row->TOP_RATE);
 			$row->SIDE_MAP = preg_replace("/[^0-9.]/", "", $row->SIDE_MAP);
-			$row->SIDE_RATE = preg_replace("/[^0-9.]/", "", $row->SIDE_RATE);
+			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
 
 			// Misc: transfer [fertilizer]_QTY "others" to [fertilizer_type]
+			// Remove all characters that precede "("
+			// Remove all "(" and ")"
+			// Replace all "&" with a comma ","
 			if($row->BASAL_QTY != ""){
 				$row->BASAL_TYPE = $row->BASAL_QTY;
 				$row->BASAL_QTY = "";
+
+
+				// $row->BASAL_TYPE = str_replace(['(', ')'], "?", $row->BASAL_TYPE);
+				// Remove all characters that precede "("
+				$row->BASAL_TYPE = str_replace(
+					substr($row->BASAL_TYPE, 0, strpos($row->BASAL_TYPE, "(") + 1), 
+					"", $row->BASAL_TYPE);
+
+				// Remove all "(", ")" and spaces
+				$row->BASAL_TYPE = str_replace(['(', ')', ' '], "", $row->BASAL_TYPE);
+				// replace all "&" with commas ","
+				$row->BASAL_TYPE = str_replace(['&'], ",", $row->BASAL_TYPE);
 			} 
 
 			if($row->TOP_QTY != ""){
 				$row->TOP_TYPE = $row->TOP_QTY;
 				$row->TOP_QTY = "";
+
+				$row->TOP_TYPE = str_replace(
+					substr($row->TOP_TYPE, 0, strpos($row->TOP_TYPE, "(") + 1), 
+					"", $row->TOP_TYPE);
+
+				// Remove all "(", ")" and spaces
+				$row->TOP_TYPE = str_replace(['(', ')', ' '], "", $row->TOP_TYPE);
+				// replace all "&" with commas ","
+				$row->TOP_TYPE = str_replace(['&'], ",", $row->TOP_TYPE);				
 			} 
 
 			if($row->SIDE_QTY != ""){
 				$row->SIDE_TYPE = $row->SIDE_QTY;
 				$row->SIDE_QTY = "";
+
+				$row->SIDE_TYPE = str_replace(
+					substr($row->SIDE_TYPE, 0, strpos($row->SIDE_TYPE, "(") + 1), 
+					"", $row->SIDE_TYPE);
+
+				// Remove all "(", ")" and spaces
+				$row->SIDE_TYPE = str_replace(['(', ')', ' '], "", $row->SIDE_TYPE);
+				// replace all "&" with commas ","
+				$row->SIDE_TYPE = str_replace(['&'], ",", $row->SIDE_TYPE);				
 			} 
 
 
