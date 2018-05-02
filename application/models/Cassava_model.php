@@ -102,8 +102,16 @@ class Cassava_model extends CI_Model{
 		$result = $this->getplotdata(ResultReturnType::ResultSet);
 
 		// Write the column headers
+		$queryArr = $result->result();
+		foreach($queryArr[0] as $key => $val)
+		{
+			$keys[] = $key;
+		}
 
+		// Insert new column names not in the original query
+		array_push($keys, "lat", "lon", "pwidth", "pheight");
 
+		// Process the body
 		foreach($result->result() as $row){
 			// 01. Create separate column fields for _06loc (longitude, latitude)
 			if(strlen($row->_06loc) > 3 && strpos($row->_06loc, ",") !== false){
@@ -112,13 +120,22 @@ class Cassava_model extends CI_Model{
 				$row->lon = $gps[1];
 				$row->_06loc = "";
 			}
+			else{
+				// blank values
+				$row->lat = "";
+				$row->lon = "";
+			}
 
 			// 02. Create separate fields for _09pdist_prow (width, height)
-			if(strpos($row->_09pdist_prow ,"x") !== false){
+			if(strpos(strtolower($row->_09pdist_prow) ,"x") !== false){
 				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
 				$size = explode("x", $this->stripspaces($row->_09pdist_prow));
 				$row->width = $size[0];
 				$row->height = $size[1];
+			}
+			else{
+				$row->width = "";
+				$row->height = "";
 			}
 
 			// 03. Remove metric units on applicable items
@@ -138,6 +155,10 @@ class Cassava_model extends CI_Model{
 			$row->SIDE_MAP = preg_replace("/[^0-9.]/", "", $row->SIDE_MAP);
 			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
 
+			// 04: Text values should default to 0: upon planting, before planting
+			// n/a, na values should be made blank
+			// Detect the prescence of monTH
+
 			// Misc: transfer [fertilizer]_QTY "others" to [fertilizer_type]
 			// Remove all characters that precede "("
 			// Remove all "(" and ")"
@@ -145,7 +166,6 @@ class Cassava_model extends CI_Model{
 			if($row->BASAL_QTY != ""){
 				$row->BASAL_TYPE = $row->BASAL_QTY;
 				$row->BASAL_QTY = "";
-
 
 				// $row->BASAL_TYPE = str_replace(['(', ')'], "?", $row->BASAL_TYPE);
 				// Remove all characters that precede "("
@@ -192,8 +212,9 @@ class Cassava_model extends CI_Model{
 			$output[] = $row;
 		}
 
+		// Append the column name headers to the final array
+		array_unshift($output, $keys);
 		return $output;
 	}
-
 }
 ?>
