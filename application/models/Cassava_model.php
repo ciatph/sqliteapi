@@ -114,6 +114,8 @@ class Cassava_model extends CI_Model{
 	 * Replace all "&" with a comma ","
 	 */
 	public function cleanFertilizers($QTY, $TYPE, $RATE){
+		$isKeyPair = false;
+
 		if($QTY != ""){
 			$TYPE = $QTY;
 
@@ -130,9 +132,27 @@ class Cassava_model extends CI_Model{
 			// process multiple TOP_TYPES
 			$type_arr = explode(",", $TYPE);
 
-			$QTY = "";
-			$TYPE = "";
-			$RATE = "";
+			//$QTY = "";
+			//$TYPE = "";
+			//$RATE = "";
+
+			// Empty or retain TYPE and RATE
+			for($i=0; $i<count($type_arr); $i++){
+				$fertilizer = explode(":", $type_arr[$i]);
+				if(count($fertilizer) > 1){
+					$QTY = "";
+					$TYPE = "";
+					$RATE = "";
+				}
+				else{
+					$fertilizer = explode(" ", $type_arr[$i]);
+					if(count($fertilizer) > 1){
+						$QTY = "";
+						$TYPE = "";
+						$RATE = "";
+					}
+				}
+			}
 
 			for($i=0; $i<count($type_arr); $i++){
 				// check for inner rate:type key-pairs
@@ -216,19 +236,28 @@ class Cassava_model extends CI_Model{
 			}
 
 			// 02. Create separate fields for _09pdist_prow (width, height)
+			$row->_09pdist_prow = preg_replace("/[*]/", "x", $row->_09pdist_prow);
 			if(strpos(strtolower($row->_09pdist_prow) ,"x") !== false){
 				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
-				$size = explode("x", $this->stripspaces($row->_09pdist_prow));
+				$size = explode("x", $row->_09pdist_prow);
 				$row->width = $size[0];
-				$row->height = $size[1];
+				$row->height = (count($size) > 1) ? $size[1] : "";
 			}
 			else{
-				$row->width = "";
-				$row->height = "";
+				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
+
+				if($row->_09pdist_prow == ""){
+					$row->width = "";
+					$row->height = "";
+				}
+				else{
+					$row->width = $row->_09pdist_prow;
+					$row->height = $row->_09pdist_prow;
+				}
 			}
 
 			// 03. Remove metric units on applicable items
-			$row->_02noplow = preg_replace("/[^0-9.,]/", "", $row->_09pdist_prow);
+			$row->_02noplow = preg_replace("/[^0-9.,]/", "", $row->_02noplow);
 			$row->_03noharrow = preg_replace("/[^0-9.,]/", "", $row->_03noharrow);
 			$row->_12freq = preg_replace("/[^0-9.,]/", "", $row->_12freq);
 			$row->_11growthstg = preg_replace("/[^0-9.,]/", "", $row->_11growthstg);
@@ -245,6 +274,7 @@ class Cassava_model extends CI_Model{
 			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
 
 			// Clean Fertilizer BASAL
+			/*
 			if($row->BASAL_QTY != ""){
 				$values = $this->cleanFertilizers($row->BASAL_QTY, $row->BASAL_TYPE, $row->BASAL_RATE);
 				$row->BASAL_QTY = $values[0];
@@ -267,6 +297,7 @@ class Cassava_model extends CI_Model{
 				$row->SIDE_TYPE = $values[1];
 				$row->SIDE_RATE = $values[2];
 			}
+			*/
 
 			// Record the formatted raw data into a new array
 			$output[] = $row;
