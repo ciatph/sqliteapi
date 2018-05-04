@@ -38,10 +38,12 @@ class Cassava extends CI_Controller{
 	 * Uses file input/output stream
 	 */
 	public function export_csv_array(){
+		
 		header("Content-type: application/csv");
         header("Content-Disposition: attachment; filename=\"cassava_data".".csv\"");
         header("Pragma: no-cache");
-        header("Expires: 0");
+		header("Expires: 0");
+		
 
 	  	// Open the write output stream
         $handle = fopen('php://output', 'w');

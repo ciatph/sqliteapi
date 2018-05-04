@@ -10,10 +10,18 @@ abstract class ResultReturnType
 	const Json = "json";
 }
 
+const MAX_FERTILIZER_NAME = "14-14-14";
+const FERTILIZERS = array(
+	"14" => "14-14-14",
+	"15" => "15-15-15",
+	"16" => "16-20-0",
+	"46" => "46-0-0"
+);
 
 
 
 class Cassava_model extends CI_Model{
+
 	public function __construct()
 	{
 		$this->load->database();
@@ -89,11 +97,92 @@ class Cassava_model extends CI_Model{
 	}	
 
 
+	/**
+	 * Remove all spaces from a string
+	 */
 	public function stripspaces($string){
 		return str_replace(' ', '', $string);
 	}
 
 
+	/**
+	 * Clean the fertilizers field (type, rate quantity)
+	 * Process multiple entries in (1) cell; items separated by commas
+	 * Misc: transfer [fertilizer]_QTY "others" to [fertilizer_type]
+	 * Remove all characters that precede "("
+	 * Remove all "(" and ")"
+	 * Replace all "&" with a comma ","
+	 */
+	public function cleanFertilizers($QTY, $TYPE, $RATE){
+		if($QTY != ""){
+			$TYPE = $QTY;
+
+			$TYPE = str_replace(
+				substr($TYPE, 0, strpos($TYPE, "(")), 
+				"", $TYPE);
+
+			// replace all "&" with commas ","
+			$TYPE = str_replace(['&'], ",", $TYPE);		
+			// Remove all "(", ")" and spaces
+			$TYPE = str_replace(['(', ')'], "", $TYPE);	
+			$TYPE = str_replace([' ,', ', '], ",", $TYPE);	
+
+			// process multiple TOP_TYPES
+			$type_arr = explode(",", $TYPE);
+
+			$QTY = "";
+			$TYPE = "";
+			$RATE = "";
+
+			for($i=0; $i<count($type_arr); $i++){
+				// check for inner rate:type key-pairs
+				$fertilizer = explode(":", $type_arr[$i]);
+
+				if(count($fertilizer) > 1){
+					if(strlen($fertilizer[1]) < strlen(MAX_FERTILIZER_NAME) && array_key_exists($fertilizer[1], FERTILIZERS))
+						$fertilizer[1] = FERTILIZERS[trim($fertilizer[1])];
+					
+					$TYPE .= $fertilizer[1] . ",";
+					$RATE .= preg_replace("/[^0-9.,]/", "",  $fertilizer[0]) . ",";
+				}
+				else{
+					$fertilizer = explode(" ", $type_arr[$i]);
+					if(count($fertilizer) > 1){
+						if(strlen($fertilizer[1]) < strlen(MAX_FERTILIZER_NAME) && array_key_exists($fertilizer[1], FERTILIZERS))
+							$fertilizer[1] = FERTILIZERS[trim($fertilizer[1])];
+
+						$TYPE .= $fertilizer[1] . ",";
+						$RATE .= preg_replace("/[^0-9.,]/", "",  $fertilizer[0]) . ",";
+					}
+				}
+			}				
+		} 
+
+		$QTY = rtrim($QTY, ",");
+		$RATE = rtrim($RATE, ",");
+		return array($QTY, $TYPE, $RATE);
+	}
+
+
+	/**
+	 * Turn the fertilizer Months After Application (MAP) into:
+	 * - blank ("") if its na or n/a
+	 * - 0 if its other alphabet strings (upon application, after application, etc)
+	 */
+	public function cleanFertilizerMAP($MAP){
+		if(preg_match("/[a-z]/i", $MAP)){
+			if(strpos(strtolower($MAP), "na") || strpos(strtolower($MAP), "n/a")){
+				return "";
+			}
+			else{
+				return 0;
+			}
+		}
+		
+		return preg_replace("/[^0-9.]/", "", $MAP);
+	}
+	
+ 
 	/**
 	 * Get raw farmland data and clean/modify it according to data specification
 	 */
@@ -139,77 +228,45 @@ class Cassava_model extends CI_Model{
 			}
 
 			// 03. Remove metric units on applicable items
-			$row->_02noplow = preg_replace("/[^0-9.]/", "", $row->_09pdist_prow);
-			$row->_03noharrow = preg_replace("/[^0-9.]/", "", $row->_03noharrow);
-			$row->_12freq = preg_replace("/[^0-9.]/", "", $row->_12freq);
-			$row->_11growthstg = preg_replace("/[^0-9.]/", "", $row->_11growthstg);
-			$row->_12areapl = preg_replace("/[^0-9.]/", "", $row->_12areapl);
-			$row->_04rootspl = preg_replace("/[^0-9.]/", "", $row->_04rootspl);
+			$row->_02noplow = preg_replace("/[^0-9.,]/", "", $row->_09pdist_prow);
+			$row->_03noharrow = preg_replace("/[^0-9.,]/", "", $row->_03noharrow);
+			$row->_12freq = preg_replace("/[^0-9.,]/", "", $row->_12freq);
+			$row->_11growthstg = preg_replace("/[^0-9.,]/", "", $row->_11growthstg);
+			$row->_12areapl = preg_replace("/[^0-9.,]/", "", $row->_12areapl);
+			$row->_04rootspl = preg_replace("/[^0-9.,]/", "", $row->_04rootspl);
 			// yield: might need to normalize to kg/hec
-			$row->_03yieldhect = preg_replace("/[^0-9.]/", "", $row->_03yieldhect);
-			// fertilizers: TO-DO Type:Others=>Qty
-			$row->BASAL_MAP = preg_replace("/[^0-9.]/", "", $row->BASAL_MAP);
+			$row->_03yieldhect = preg_replace("/[^0-9.,]/", "", $row->_03yieldhect);
+			// 04: Text values should default to 0: upon planting, before planting
+			$row->BASAL_MAP = $this->cleanFertilizerMAP($row->BASAL_MAP);
 			$row->BASAL_RATE = preg_replace("/[^0-9.,]/", "", $row->BASAL_RATE);
-			$row->TOP_MAP = preg_replace("/[^0-9.]/", "", $row->TOP_MAP);
+			$row->TOP_MAP = $this->cleanFertilizerMAP($row->TOP_MAP);
 			$row->TOP_RATE = preg_replace("/[^0-9.,]/", "", $row->TOP_RATE);
-			$row->SIDE_MAP = preg_replace("/[^0-9.]/", "", $row->SIDE_MAP);
+			$row->SIDE_MAP = $this->cleanFertilizerMAP($row->SIDE_MAP);
 			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
 
-			// 04: Text values should default to 0: upon planting, before planting
-			// n/a, na values should be made blank
-			// Detect the prescence of monTH
-
-			// Misc: transfer [fertilizer]_QTY "others" to [fertilizer_type]
-			// Remove all characters that precede "("
-			// Remove all "(" and ")"
-			// Replace all "&" with a comma ","
+			// Clean Fertilizer BASAL
 			if($row->BASAL_QTY != ""){
-				$row->BASAL_TYPE = $row->BASAL_QTY;
-				$row->BASAL_QTY = "";
+				$values = $this->cleanFertilizers($row->BASAL_QTY, $row->BASAL_TYPE, $row->BASAL_RATE);
+				$row->BASAL_QTY = $values[0];
+				$row->BASAL_TYPE = $values[1];
+				$row->BASAL_RATE = $values[2];
+			}
 
-				// $row->BASAL_TYPE = str_replace(['(', ')'], "?", $row->BASAL_TYPE);
-				// Remove all characters that precede "("
-				$row->BASAL_TYPE = str_replace(
-					substr($row->BASAL_TYPE, 0, strpos($row->BASAL_TYPE, "(")), 
-					"", $row->BASAL_TYPE);
-
-				// replace all "&" with commas ","
-				$row->BASAL_TYPE = str_replace(['&'], ",", $row->BASAL_TYPE);
-				// Remove all "(", ")" and spaces
-				$row->BASAL_TYPE = str_replace(['(', ')', ' ,'], "", $row->BASAL_TYPE);		
-				$row->BASAL_TYPE = str_replace([' ,', ', '], ",", $row->BASAL_TYPE);		
-			} 
-
+			// Clean Fertilizer TOP
 			if($row->TOP_QTY != ""){
-				$row->TOP_TYPE = $row->TOP_QTY;
-				$row->TOP_QTY = "";
+				$values = $this->cleanFertilizers($row->TOP_QTY, $row->TOP_TYPE, $row->TOP_RATE);
+				$row->TOP_QTY = $values[0];
+				$row->TOP_TYPE = $values[1];
+				$row->TOP_RATE = $values[2];
+			}
 
-				$row->TOP_TYPE = str_replace(
-					substr($row->TOP_TYPE, 0, strpos($row->TOP_TYPE, "(")), 
-					"", $row->TOP_TYPE);
-
-				// replace all "&" with commas ","
-				$row->TOP_TYPE = str_replace(['&'], ",", $row->TOP_TYPE);		
-				// Remove all "(", ")" and spaces
-				$row->TOP_TYPE = str_replace(['(', ')'], "", $row->TOP_TYPE);	
-				$row->TOP_TYPE = str_replace([' ,', ', '], ",", $row->TOP_TYPE);	
-			} 
-
+			// Clean Fertilizer SIDE
 			if($row->SIDE_QTY != ""){
-				$row->SIDE_TYPE = $row->SIDE_QTY;
-				$row->SIDE_QTY = "";
-
-				$row->SIDE_TYPE = str_replace(
-					substr($row->SIDE_TYPE, 0, strpos($row->SIDE_TYPE, "(")), 
-					"", $row->SIDE_TYPE);
-
-				// replace all "&" with commas ","
-				$row->SIDE_TYPE = str_replace(['&'], ",", $row->SIDE_TYPE);			
-				// Remove all "(", ")" and spaces
-				$row->SIDE_TYPE = str_replace(['(', ')', ' ,'], "", $row->SIDE_TYPE);	
-				$row->SIDE_TYPE = str_replace([' ,', ', '], ",", $row->SIDE_TYPE);				
-			} 
-
+				$values = $this->cleanFertilizers($row->SIDE_QTY, $row->SIDE_TYPE, $row->SIDE_RATE);
+				$row->SIDE_QTY = $values[0];
+				$row->SIDE_TYPE = $values[1];
+				$row->SIDE_RATE = $values[2];
+			}
 
 			// Record the formatted raw data into a new array
 			$output[] = $row;
