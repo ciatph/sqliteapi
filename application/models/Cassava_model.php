@@ -127,15 +127,24 @@ class Cassava_model extends CI_Model{
 			}
 
 			// 02. Create separate fields for _09pdist_prow (width, height)
+			$row->_09pdist_prow = preg_replace("/[*]/", "x", $row->_09pdist_prow);
 			if(strpos(strtolower($row->_09pdist_prow) ,"x") !== false){
 				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
-				$size = explode("x", $this->stripspaces($row->_09pdist_prow));
+				$size = explode("x", $row->_09pdist_prow);
 				$row->width = $size[0];
-				$row->height = $size[1];
+				$row->height = (count($size) > 1) ? $size[1] : "";
 			}
 			else{
-				$row->width = "";
-				$row->height = "";
+				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
+
+				if($row->_09pdist_prow == ""){
+					$row->width = "";
+					$row->height = "";
+				}
+				else{
+					$row->width = $row->_09pdist_prow;
+					$row->height = $row->_09pdist_prow;
+				}
 			}
 
 			// 03. Remove metric units on applicable items
