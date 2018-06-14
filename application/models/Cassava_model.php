@@ -34,45 +34,41 @@ class Cassava_model extends CI_Model{
 	 */
 	public function getplotdata($returnType = ResultReturnType::Arrays)
 	{
-		$sql = "SELECT farmland_setup._plotno, farmland_setup._year, farmland_setup._fid, users.email, 
-			cultural_mngt._02noplow, cultural_mngt._03noharrow, cultural_mngt._05terrain, cultural_mngt._07cropestmethod, cultural_mngt._08varietyplanted, 
-			cultural_mngt._09pdist_prow, cultural_mngt._11pesticiderate, cultural_mngt._12freq, cultural_mngt._13dose, cultural_mngt._14pstcide_type, 
-			cultural_mngt._15srctype, cultural_mngt._16srcname, 
-			farmland_setup._06loc, farmland_setup._07pdate, farmland_setup._08hvdate, farmland_setup._09soil, farmland_setup._10eco,
-			fertilizer_basal._01map AS BASAL_MAP, fertilizer_basal._02rate AS BASAL_RATE, fertilizer_basal._03type AS BASAL_TYPE, fertilizer_basal._04qty AS BASAL_QTY, 
-			fertilizer_top._01map AS TOP_MAP, fertilizer_top._02rate AS TOP_RATE, fertilizer_top._03type AS TOP_TYPE, fertilizer_top._04qty AS TOP_QTY,  
-			fertilizer_side._01map AS SIDE_MAP, fertilizer_side._02rate AS SIDE_RATE, fertilizer_side._03type AS SIDE_TYPE, fertilizer_side._04qty AS SIDE_QTY, 
-			pest_disease._01muni, pest_disease._02brgy, pest_disease._03whiteflies, pest_disease._04mites, pest_disease._05mealybugs, 
-			pest_disease._06witchb_symptoms, pest_disease._07cblight, pest_disease._08cmosaic, pest_disease._09anthracnose, pest_disease._10rot, 
-			pest_disease._11growthstg, pest_disease._12areapl, pest_disease._13areainfect, pest_disease._14varietyinfect, pest_disease._15deg, 
-			production._02hvmethod, production._03yieldhect, production._04rootspl, notes._01note
-			
-			FROM farmland_setup 
+		$sql = "SELECT farmland_setup._plotno, farmland_setup._year, farmland_setup._did, farmland_setup._fid, farmland_setup._userid, users.email, 
+cultural_mngt._02noplow, cultural_mngt._03noharrow, cultural_mngt._05terrain, cultural_mngt._07cropestmethod, cultural_mngt._08varietyplanted, cultural_mngt._09pdist_prow, cultural_mngt._11pesticiderate, cultural_mngt._12freq, cultural_mngt._13dose, cultural_mngt._14pstcide_type, cultural_mngt._15srctype, cultural_mngt._16srcname, cultural_mngt._status, farmland_setup._06loc, farmland_setup._07pdate, farmland_setup._08hvdate, farmland_setup._09soil, farmland_setup._10eco, farmland_setup._status, fertilizer_basal._01map AS BASAL_MAP, fertilizer_basal._02rate AS BASAL_RATE, fertilizer_basal._03type AS BASAL_TYPE, fertilizer_basal._04qty AS BASAL_QTY, fertilizer_basal._status, fertilizer_top._01map AS TOP_MAP, fertilizer_top._02rate AS TOP_RATE, fertilizer_top._03type AS TOP_TYPE, fertilizer_top._04qty AS TOP_QTY, fertilizer_top._status, fertilizer_side._01map AS SIDE_MAP, fertilizer_side._02rate AS SIDE_RATE, fertilizer_side._03type AS SIDE_TYPE, fertilizer_side._04qty AS SIDE_QTY, fertilizer_side._status, farmer_info._05homeadd, pest_disease._01muni, pest_disease._02brgy, pest_disease._03whiteflies, pest_disease._04mites, pest_disease._05mealybugs, pest_disease._06witchb_symptoms, pest_disease._07cblight, pest_disease._08cmosaic, pest_disease._09anthracnose, pest_disease._10rot, pest_disease._11growthstg, farmer_info._06area, pest_disease._12areapl, pest_disease._13areainfect, pest_disease._14varietyinfect, pest_disease._15deg, pest_disease._status, production._02hvmethod, production._03yieldhect, production._04rootspl, production._status, notes._01note, notes._status 
+	
+	FROM farmland_setup 
 
-			LEFT JOIN cultural_mngt ON cultural_mngt._fid=farmland_setup._fid 
-			LEFT JOIN fertilizer_basal ON fertilizer_basal._fid=farmland_setup._fid 
-			LEFT JOIN fertilizer_top ON fertilizer_top._fid=farmland_setup._fid 
-			LEFT JOIN fertilizer_side ON fertilizer_side._fid=farmland_setup._fid 
-			LEFT JOIN pest_disease ON pest_disease._fid=farmland_setup._fid 
-			LEFT JOIN production ON production._fid=farmland_setup._fid 
-			LEFT JOIN notes ON notes._fid=farmland_setup._fid 
-			LEFT JOIN users ON users.fb_id=farmland_setup._userid 
+	LEFT JOIN cultural_mngt ON cultural_mngt._fid=farmland_setup._fid 
+	LEFT JOIN fertilizer_basal ON fertilizer_basal._fid=farmland_setup._fid 
+	LEFT JOIN fertilizer_top ON fertilizer_top._fid=farmland_setup._fid 
+	LEFT JOIN fertilizer_side ON fertilizer_side._fid=farmland_setup._fid 
+	LEFT JOIN pest_disease ON pest_disease._fid=farmland_setup._fid 
+	LEFT JOIN production ON production._fid=farmland_setup._fid 
+	LEFT JOIN notes ON notes._fid=farmland_setup._fid 
+	LEFT JOIN users ON users.fb_id=farmland_setup._userid 
+	LEFT JOIN farmer_info ON farmer_info._did=farmland_setup._did
 
-			WHERE farmland_setup._userid = cultural_mngt._userid 
-			
-			AND farmland_setup._fid = cultural_mngt._fid 
-			AND farmland_setup._userid = fertilizer_basal._userid 
-			AND farmland_setup._fid = fertilizer_basal._fid 
-			AND farmland_setup._userid = fertilizer_top._userid 
-			AND farmland_setup._fid = fertilizer_top._fid 
-			AND farmland_setup._userid = fertilizer_side._userid 
-			AND farmland_setup._fid = fertilizer_side._fid 
-			AND farmland_setup._userid = pest_disease._userid 
-			AND farmland_setup._fid = pest_disease._fid 
-			AND farmland_setup._userid = production._userid 
-			AND farmland_setup._fid = production._fid 
-			AND farmland_setup._userid = notes._userid 
-			AND farmland_setup._fid = notes._fid";
+	WHERE 
+
+	farmland_setup._userid = cultural_mngt._userid 
+	AND farmland_setup._fid = cultural_mngt._fid 
+	AND farmland_setup._userid = fertilizer_basal._userid 
+	AND farmland_setup._fid = fertilizer_basal._fid 
+	AND farmland_setup._userid = fertilizer_top._userid 
+	AND farmland_setup._fid = fertilizer_top._fid 
+	AND farmland_setup._userid = fertilizer_side._userid
+	AND farmland_setup._fid = fertilizer_side._fid 
+	AND farmland_setup._userid = pest_disease._userid 
+	AND farmland_setup._fid = pest_disease._fid 
+	AND farmland_setup._userid = production._userid 
+	AND farmland_setup._fid = production._fid 
+	AND farmland_setup._userid = notes._userid 
+	AND farmland_setup._fid = notes._fid 
+	AND farmland_setup._did=farmer_info._did
+
+	GROUP BY farmland_setup._fid";
+
 
 		// Return data following the format defined in ResultReturnType
 		if($returnType == ResultReturnType::ResultSet){
@@ -221,7 +217,8 @@ class Cassava_model extends CI_Model{
 		}
 
 		// Insert new column names not in the original query
-		array_push($keys, "lat", "lon", "pwidth", "pheight");
+		// array_push($keys, "lat", "lon", "pwidth", "pheight", "area_planted");
+		array_push($keys, "lat", "lon", "area_planted");
 
 		// Process the body
 		foreach($result->result() as $row){
@@ -239,6 +236,7 @@ class Cassava_model extends CI_Model{
 			}
 
 			// 02. Create separate fields for _09pdist_prow (width, height)
+			/*
 			$row->_09pdist_prow = preg_replace("/[*]/", "x", $row->_09pdist_prow);
 			if(strpos(strtolower($row->_09pdist_prow) ,"x") !== false){
 				$row->_09pdist_prow = preg_replace("/[^0-9,.xX]/", "", $row->_09pdist_prow);
@@ -257,25 +255,63 @@ class Cassava_model extends CI_Model{
 					$row->width = $row->_09pdist_prow;
 					$row->height = $row->_09pdist_prow;
 				}
+			}	
+			*/		
+
+			// 02. Get the area _06area if _12areapl has no content
+			if($row->_12areapl == ""){
+				if($row->_06area != ""){
+					// Get the plot no.
+					$plotNo = $row->_plotno;
+					$area = array();
+
+					// Explode the _12areapl
+					$delimiter = array(",", ";");
+
+					$hasDelim = false;
+					for($i=0; $i<count($delimiter); $i++){
+						if(strpos($row->_06area, $delimiter[$i]) !== false){
+							$area = explode($delimiter[$i], $this->stripspaces($row->_06area));
+	
+							// Normalize the area
+							$row->area_planted = $area[$plotNo - 1];
+							$hasDelim = true;
+							break;							
+						}
+					}
+
+					if($hasDelim === false){
+						// copy the contents of _12areap
+						$row->area_planted = preg_replace("/[^0-9.,]/", "", $row->_06area);					
+					}
+				
+				}
 			}
+			else{
+				// copy the contents of _12areap
+				$row->area_planted = preg_replace("/[^0-9.,]/", "", $row->_12areapl);
+			}
+
 
 			// 03. Remove metric units on applicable items
 			$row->_02noplow = preg_replace("/[^0-9.,]/", "", $row->_02noplow);
 			$row->_03noharrow = preg_replace("/[^0-9.,]/", "", $row->_03noharrow);
-			$row->_12freq = preg_replace("/[^0-9.,]/", "", $row->_12freq);
-			$row->_11growthstg = preg_replace("/[^0-9.,]/", "", $row->_11growthstg);
+			//!$row->_12freq = preg_replace("/[^0-9.,]/", "", $row->_12freq);
+			//!$row->_11growthstg = preg_replace("/[^0-9.,]/", "", $row->_11growthstg);
 			$row->_12areapl = preg_replace("/[^0-9.,]/", "", $row->_12areapl);
 			$row->_04rootspl = preg_replace("/[^0-9.,]/", "", $row->_04rootspl);
 			// yield: might need to normalize to kg/hec
-			$row->_03yieldhect = preg_replace("/[^0-9.,]/", "", $row->_03yieldhect);
+			//!$row->_03yieldhect = preg_replace("/[^0-9.,]/", "", $row->_03yieldhect);
 			// 04: Text values should default to 0: upon planting, before planting
+			/*
 			$row->BASAL_MAP = $this->cleanFertilizerMAP($row->BASAL_MAP);
 			$row->BASAL_RATE = preg_replace("/[^0-9.,]/", "", $row->BASAL_RATE);
 			$row->TOP_MAP = $this->cleanFertilizerMAP($row->TOP_MAP);
 			$row->TOP_RATE = preg_replace("/[^0-9.,]/", "", $row->TOP_RATE);
 			$row->SIDE_MAP = $this->cleanFertilizerMAP($row->SIDE_MAP);
 			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
-
+			*/
+			/*
 			// Clean Fertilizer BASAL
 			if($row->BASAL_QTY != ""){
 				$values = $this->cleanFertilizers($row->BASAL_QTY, $row->BASAL_TYPE, $row->BASAL_RATE);
@@ -299,7 +335,7 @@ class Cassava_model extends CI_Model{
 				$row->SIDE_TYPE = $values[1];
 				$row->SIDE_RATE = $values[2];
 			}
-
+			*/
 			// Record the formatted raw data into a new array
 			$output[] = $row;
 		}
