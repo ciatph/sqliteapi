@@ -164,6 +164,7 @@ class Cassava_model extends CI_Model{
 					
 					$TYPE .= $fertilizer[1] . ",";
 					$RATE .= preg_replace("/[^0-9.,]/", "",  $fertilizer[0]) . ",";
+					$QTY = "";
 				}
 				else{
 					$fertilizer = explode(" ", $type_arr[$i]);
@@ -173,12 +174,14 @@ class Cassava_model extends CI_Model{
 
 						$TYPE .= $fertilizer[1] . ",";
 						$RATE .= preg_replace("/[^0-9.,]/", "",  $fertilizer[0]) . ",";
+						$QTY = "";
 					}
 				}
 			}				
 		} 
 
 		$QTY = rtrim($QTY, ",");
+		$TYPE = rtrim($TYPE, ",");
 		$RATE = rtrim($RATE, ",");
 		return array($QTY, $TYPE, $RATE);
 	}
@@ -274,7 +277,6 @@ class Cassava_model extends CI_Model{
 			$row->SIDE_RATE = preg_replace("/[^0-9.,]/", "", $row->SIDE_RATE);
 
 			// Clean Fertilizer BASAL
-			/*
 			if($row->BASAL_QTY != ""){
 				$values = $this->cleanFertilizers($row->BASAL_QTY, $row->BASAL_TYPE, $row->BASAL_RATE);
 				$row->BASAL_QTY = $values[0];
@@ -297,7 +299,6 @@ class Cassava_model extends CI_Model{
 				$row->SIDE_TYPE = $values[1];
 				$row->SIDE_RATE = $values[2];
 			}
-			*/
 
 			// Record the formatted raw data into a new array
 			$output[] = $row;
